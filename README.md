@@ -42,7 +42,7 @@ cd disk-service
 ```
 
 Настройки подключения по умолчанию (`disk-service/src/main/resources/application.yml`)
-уже указывают на `localhost:5432`, база `disk_rental`, пользователь `disk` / `disk`.
+уже указывают на `localhost:5433`, база `disk_rental`, пользователь `disk` / `disk`.
 
 ## API
 

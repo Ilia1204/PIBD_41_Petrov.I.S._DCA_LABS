@@ -4,7 +4,7 @@ spring:
 
   # по умолчанию подключаемся к локальной базе, в docker-compose значения переопределяются через переменные окружения
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/disk_rental}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/disk_rental}
     username: ${SPRING_DATASOURCE_USERNAME:disk}
     password: ${SPRING_DATASOURCE_PASSWORD:disk}
 
