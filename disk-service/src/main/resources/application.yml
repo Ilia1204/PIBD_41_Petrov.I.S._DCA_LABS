@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: disk-service
+
+  # по умолчанию подключаемся к локальной базе, в docker-compose значения переопределяются через переменные окружения
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/disk_rental}
+    username: ${SPRING_DATASOURCE_USERNAME:disk}
+    password: ${SPRING_DATASOURCE_PASSWORD:disk}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate # схему создаёт только Liquibase, Hibernate её не трогает
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+server:
+  port: ${SERVER_PORT:8081}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

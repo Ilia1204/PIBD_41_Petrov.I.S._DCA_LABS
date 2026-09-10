@@ -1,0 +1,50 @@
+# Лабораторная работа 1. Основной сервис.
+# Поднимает PostgreSQL и disk-service в одной docker-сети.
+#
+#   docker compose up -d            # поднять всё
+#   docker compose up -d postgres   # поднять только БД (сервис запускать из IDE)
+#   docker compose down             # остановить
+#   docker compose down -v          # остановить и удалить данные БД
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: dca-postgres
+    environment:
+      POSTGRES_DB: disk_rental
+      POSTGRES_USER: disk
+      POSTGRES_PASSWORD: disk
+    ports:
+      - "5432:5432"          # проброс наружу нужен только для локального запуска сервиса из IDE
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U disk -d disk_rental"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - dca-net
+
+  disk-service:
+    build: ./disk-service
+    container_name: dca-disk-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/disk_rental
+      SPRING_DATASOURCE_USERNAME: disk
+      SPRING_DATASOURCE_PASSWORD: disk
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+    networks:
+      - dca-net
+
+networks:
+  dca-net:
+    driver: bridge
+
+volumes:
+  postgres-data:

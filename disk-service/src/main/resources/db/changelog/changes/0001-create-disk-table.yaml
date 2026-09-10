@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0001-create-disk-table
+      author: petrov.i.s
+      changes:
+        - createTable:
+            tableName: disk
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: inventory_number
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uq_disk_inventory_number
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: genre
+                  type: VARCHAR(128)
+              - column:
+                  name: status
+                  type: VARCHAR(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: holder_name
+                  type: VARCHAR(255)
+              - column:
+                  name: issued_at
+                  type: TIMESTAMP WITH TIME ZONE
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
