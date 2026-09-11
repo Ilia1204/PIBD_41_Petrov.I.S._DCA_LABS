@@ -22,3 +22,7 @@ Thumbs.db
 
 # Logs / local
 *.log
+
+# личные файлы не по теме репозитория
+~$*.docx
+*.docx
