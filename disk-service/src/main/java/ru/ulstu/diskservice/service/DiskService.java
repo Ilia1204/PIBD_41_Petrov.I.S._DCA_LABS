@@ -35,7 +35,6 @@ public class DiskService {
                 .orElseThrow(() -> new NotFoundException("Диск с id=" + id + " не найден"));
     }
 
-    // Принять новый диск в прокат
     public Disk create(CreateDiskRequest request) {
         if (repository.existsByInventoryNumber(request.inventoryNumber())) {
             throw new BusinessRuleException(
@@ -49,7 +48,6 @@ public class DiskService {
         return repository.save(disk);
     }
 
-    // Отредактировать справочную информацию о диске
     public Disk update(Long id, UpdateDiskRequest request) {
         Disk disk = getById(id);
         disk.setTitle(request.title());
@@ -57,7 +55,6 @@ public class DiskService {
         return disk;
     }
 
-    // Выдать диск на руки клиенту
     public Disk issue(Long id, String holderName) {
         Disk disk = getById(id);
         if (disk.getStatus() == DiskStatus.ON_HANDS) {
@@ -69,7 +66,6 @@ public class DiskService {
         return disk;
     }
 
-    // Получить диск обратно в прокат
     public Disk returnBack(Long id) {
         Disk disk = getById(id);
         if (disk.getStatus() == DiskStatus.IN_STOCK) {

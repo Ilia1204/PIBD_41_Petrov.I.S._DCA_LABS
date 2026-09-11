@@ -5,7 +5,6 @@ import java.time.Instant;
 import ru.ulstu.diskservice.domain.Disk;
 import ru.ulstu.diskservice.domain.DiskStatus;
 
-// Представление диска в ответах API
 public record DiskDto(
         Long id,
         String inventoryNumber,
