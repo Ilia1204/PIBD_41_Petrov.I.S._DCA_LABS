@@ -5,3 +5,6 @@ databaseChangeLog:
       changes:
         - sql:
             sql: CREATE INDEX idx_disk_title ON disk (title);
+      rollback:
+        - sql:
+            sql: DROP INDEX idx_disk_title;
