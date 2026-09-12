@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0002-add-title-index
+      author: petrov.i.s
+      changes:
+        - sql:
+            sql: CREATE INDEX idx_disk_title ON disk (title);
