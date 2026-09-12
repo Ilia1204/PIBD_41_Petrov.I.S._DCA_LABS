@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-// читаем таблицу disk, которой владеет и управляет disk-service, сама не создаёт и не меняет схему
 @Entity
 @Table(name = "disk")
 public class DiskView {
