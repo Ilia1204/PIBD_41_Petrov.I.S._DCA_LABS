@@ -8,6 +8,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.ResourceAccessException;
 
 import ru.ulstu.diskservice.service.BusinessRuleException;
 import ru.ulstu.diskservice.service.NotFoundException;
@@ -33,9 +34,14 @@ public class RestExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, details);
     }
 
-    // неверное поле в параметре sort, например ?sort=unknown
     @ExceptionHandler(PropertyReferenceException.class)
     public ProblemDetail handleBadSort(PropertyReferenceException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(ResourceAccessException.class)
+    public ProblemDetail handleReportServiceUnavailable(ResourceAccessException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
+                "Сервис отчётов временно недоступен, попробуйте позже");
     }
 }

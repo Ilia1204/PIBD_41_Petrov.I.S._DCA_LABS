@@ -9,10 +9,6 @@ spring:
           uri: ${DISK_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/api/disks/**
-        - id: report-service
-          uri: ${REPORT_SERVICE_URL:http://localhost:8082}
-          predicates:
-            - Path=/api/reports/**
 
 server:
   port: ${SERVER_PORT:8080}

@@ -1,5 +1,7 @@
 package ru.ulstu.diskservice.web;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,10 +21,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import ru.ulstu.diskservice.client.ReportServiceClient;
 import ru.ulstu.diskservice.service.DiskService;
 import ru.ulstu.diskservice.web.dto.CreateDiskRequest;
 import ru.ulstu.diskservice.web.dto.DiskDto;
 import ru.ulstu.diskservice.web.dto.DiskReportDto;
+import ru.ulstu.diskservice.web.dto.DiskReportItemDto;
 import ru.ulstu.diskservice.web.dto.IssueDiskRequest;
 import ru.ulstu.diskservice.web.dto.UpdateDiskRequest;
 
@@ -32,9 +36,11 @@ import ru.ulstu.diskservice.web.dto.UpdateDiskRequest;
 public class DiskController {
 
     private final DiskService service;
+    private final ReportServiceClient reportServiceClient;
 
-    public DiskController(DiskService service) {
+    public DiskController(DiskService service, ReportServiceClient reportServiceClient) {
         this.service = service;
+        this.reportServiceClient = reportServiceClient;
     }
 
     @GetMapping
@@ -88,5 +94,11 @@ public class DiskController {
     @Operation(summary = "Отчёт: сколько дисков на руках, а сколько в прокате")
     public DiskReportDto report() {
         return service.buildReport();
+    }
+
+    @GetMapping("/report/list")
+    @Operation(summary = "Список дисков для отчёта (получаем из report-service через RestTemplate)")
+    public List<DiskReportItemDto> reportList() {
+        return reportServiceClient.fetchDiskList();
     }
 }
