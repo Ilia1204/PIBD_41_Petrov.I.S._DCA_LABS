@@ -2,6 +2,8 @@ package ru.ulstu.diskservice.web;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -34,6 +36,8 @@ import ru.ulstu.diskservice.web.dto.UpdateDiskRequest;
 @RequestMapping("/api/disks")
 @Tag(name = "Диски в прокате", description = "Учёт дисков в прокате (вариант 22)")
 public class DiskController {
+
+    private static final Logger log = LoggerFactory.getLogger(DiskController.class);
 
     private final DiskService service;
     private final ReportServiceClient reportServiceClient;
@@ -99,6 +103,7 @@ public class DiskController {
     @GetMapping("/report/list")
     @Operation(summary = "Список дисков для отчёта (получаем из report-service через RestTemplate)")
     public List<DiskReportItemDto> reportList() {
+        log.info("запрашиваю список дисков для отчёта у report-service");
         return reportServiceClient.fetchDiskList();
     }
 }

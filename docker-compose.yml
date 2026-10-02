@@ -3,15 +3,15 @@ services:
     image: postgres:16
     container_name: dca-postgres
     environment:
-      POSTGRES_DB: disk_rental
-      POSTGRES_USER: disk
-      POSTGRES_PASSWORD: disk
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - '5433:5432' # наружу прокидываю 5433, чтобы не конфликтовать с локальным postgres на 5432
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U disk -d disk_rental']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
       interval: 5s
       timeout: 3s
       retries: 10
@@ -27,11 +27,12 @@ services:
       report-service:
         condition: service_started
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/disk_rental
-      SPRING_DATASOURCE_USERNAME: disk
-      SPRING_DATASOURCE_PASSWORD: disk
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SERVER_PORT: 8081
       REPORT_SERVICE_URL: http://report-service:8082
+      OTLP_ENDPOINT: http://apm-server:8200/v1/traces
     ports:
       - '8081:8081'
     networks:
@@ -44,10 +45,11 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/disk_rental
-      SPRING_DATASOURCE_USERNAME: disk
-      SPRING_DATASOURCE_PASSWORD: disk
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SERVER_PORT: 8082
+      OTLP_ENDPOINT: http://apm-server:8200/v1/traces
     # порт наружу не пробрасываю: доступ только внутри dca-net (напрямую через шлюз сервис недоступен)
     networks:
       - dca-net
@@ -60,8 +62,75 @@ services:
     environment:
       DISK_SERVICE_URL: http://disk-service:8081
       SERVER_PORT: 8080
+      OTLP_ENDPOINT: http://apm-server:8200/v1/traces
     ports:
       - '8080:8080'
+    networks:
+      - dca-net
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:8.15.0
+    container_name: dca-apm-server
+    user: root
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_started
+    volumes:
+      - ./apm-server/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
+    command: ['--strict.perms=false', '-e']
+    ports:
+      - '8200:8200'
+    networks:
+      - dca-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: dca-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: 'false'
+      ES_JAVA_OPTS: '-Xms512m -Xmx512m'
+    ports:
+      - '9200:9200'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -s http://localhost:9200/_cluster/health | grep -q "\"status\":\"green\"\\|\"status\":\"yellow\""',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    networks:
+      - dca-net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.0
+    container_name: dca-kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - '5601:5601'
+    networks:
+      - dca-net
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.15.0
+    container_name: dca-filebeat
+    user: root
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: ['--strict.perms=false']
     networks:
       - dca-net
 

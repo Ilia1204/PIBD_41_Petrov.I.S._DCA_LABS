@@ -1,0 +1,28 @@
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: false
+      # следим только за нашими тремя сервисами, а не за всеми контейнерами на машине
+      templates:
+        - condition:
+            regexp:
+              docker.container.name: '^/?dca-(disk-service|report-service|gateway)$'
+          config:
+            - type: container
+              paths:
+                - '/var/lib/docker/containers/${data.docker.container.id}/*.log'
+              json.keys_under_root: true
+              json.add_error_key: true
+
+processors:
+  - add_docker_metadata:
+      host: 'unix:///var/run/docker.sock'
+
+output.elasticsearch:
+  hosts: ['http://elasticsearch:9200']
+  index: 'app-logs-%{+yyyy.MM.dd}'
+
+setup.template.enabled: true
+setup.template.name: 'app-logs'
+setup.template.pattern: 'app-logs-*'
+setup.ilm.enabled: false
