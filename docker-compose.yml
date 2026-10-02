@@ -44,13 +44,30 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      file-storage-service:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SERVER_PORT: 8082
+      FILE_STORAGE_SERVICE_URL: http://file-storage-service:8083
       OTLP_ENDPOINT: http://apm-server:8200/v1/traces
     # порт наружу не пробрасываю: доступ только внутри dca-net (напрямую через шлюз сервис недоступен)
+    networks:
+      - dca-net
+
+  file-storage-service:
+    build: ./file-storage-service
+    container_name: dca-file-storage-service
+    environment:
+      SERVER_PORT: 8083
+      FILE_STORAGE_LOCATION: /data/storage
+      OTLP_ENDPOINT: http://apm-server:8200/v1/traces
+    volumes:
+      - file-storage-data:/data/storage
+    ports:
+      - '8083:8083'
     networks:
       - dca-net
 
@@ -140,3 +157,4 @@ networks:
 
 volumes:
   postgres-data:
+  file-storage-data:

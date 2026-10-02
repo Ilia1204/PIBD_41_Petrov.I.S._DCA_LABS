@@ -30,6 +30,7 @@ import ru.ulstu.diskservice.web.dto.DiskDto;
 import ru.ulstu.diskservice.web.dto.DiskReportDto;
 import ru.ulstu.diskservice.web.dto.DiskReportItemDto;
 import ru.ulstu.diskservice.web.dto.IssueDiskRequest;
+import ru.ulstu.diskservice.web.dto.StoredFileDto;
 import ru.ulstu.diskservice.web.dto.UpdateDiskRequest;
 
 @RestController
@@ -105,5 +106,12 @@ public class DiskController {
     public List<DiskReportItemDto> reportList() {
         log.info("запрашиваю список дисков для отчёта у report-service");
         return reportServiceClient.fetchDiskList();
+    }
+
+    @PostMapping("/report/export")
+    @Operation(summary = "Сформировать csv-отчёт по дискам и сохранить в файловое хранилище")
+    public StoredFileDto exportReport() {
+        log.info("запускаю экспорт csv-отчёта в файловое хранилище через report-service");
+        return reportServiceClient.triggerExport();
     }
 }

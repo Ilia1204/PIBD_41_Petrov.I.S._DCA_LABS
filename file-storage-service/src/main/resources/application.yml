@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: file-storage-service
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+file-storage:
+  location: ${FILE_STORAGE_LOCATION:./storage-data}
+
+server:
+  port: ${SERVER_PORT:8083}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTLP_ENDPOINT:http://localhost:8200/v1/traces}

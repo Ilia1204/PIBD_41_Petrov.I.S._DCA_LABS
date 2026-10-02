@@ -2,11 +2,11 @@ filebeat.autodiscover:
   providers:
     - type: docker
       hints.enabled: false
-      # следим только за нашими тремя сервисами, а не за всеми контейнерами на машине
+      # следим только за нашими сервисами, а не за всеми контейнерами на машине
       templates:
         - condition:
             regexp:
-              docker.container.name: '^/?dca-(disk-service|report-service|gateway)$'
+              docker.container.name: '^/?dca-(disk-service|report-service|gateway|file-storage-service)$'
           config:
             - type: container
               paths:

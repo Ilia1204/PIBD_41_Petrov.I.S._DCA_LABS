@@ -12,6 +12,9 @@ spring:
       ddl-auto: none
     open-in-view: false
 
+file-storage-service:
+  url: ${FILE_STORAGE_SERVICE_URL:http://localhost:8083}
+
 server:
   port: ${SERVER_PORT:8082}
 

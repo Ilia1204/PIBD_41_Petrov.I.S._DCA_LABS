@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import ru.ulstu.diskservice.web.dto.DiskReportItemDto;
+import ru.ulstu.diskservice.web.dto.StoredFileDto;
 
 @Component
 public class ReportServiceClient {
@@ -24,5 +25,10 @@ public class ReportServiceClient {
         DiskReportItemDto[] items = restTemplate.getForObject(
                 reportServiceUrl + "/api/reports/disks", DiskReportItemDto[].class);
         return items == null ? List.of() : List.of(items);
+    }
+
+    public StoredFileDto triggerExport() {
+        return restTemplate.postForObject(
+                reportServiceUrl + "/api/reports/export", null, StoredFileDto.class);
     }
 }
