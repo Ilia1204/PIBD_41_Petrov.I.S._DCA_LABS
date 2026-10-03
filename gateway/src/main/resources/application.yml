@@ -6,12 +6,17 @@ spring:
     gateway:
       routes:
         - id: disk-service
-          uri: ${DISK_SERVICE_URL:http://localhost:8081}
+          uri: lb://disk-service
           predicates:
             - Path=/api/disks/**
 
 server:
   port: ${SERVER_PORT:8080}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
 
 management:
   endpoints:

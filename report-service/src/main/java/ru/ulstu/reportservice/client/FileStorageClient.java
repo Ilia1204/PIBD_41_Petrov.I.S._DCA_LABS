@@ -1,6 +1,5 @@
 package ru.ulstu.reportservice.client;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -15,13 +14,12 @@ import ru.ulstu.reportservice.web.dto.StoredFileDto;
 @Component
 public class FileStorageClient {
 
-    private final RestTemplate restTemplate;
-    private final String fileStorageServiceUrl;
+    private static final String FILE_STORAGE_SERVICE_URL = "http://file-storage-service";
 
-    public FileStorageClient(RestTemplate restTemplate,
-            @Value("${file-storage-service.url}") String fileStorageServiceUrl) {
+    private final RestTemplate restTemplate;
+
+    public FileStorageClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.fileStorageServiceUrl = fileStorageServiceUrl;
     }
 
     public StoredFileDto upload(byte[] content, String fileName) {
@@ -40,6 +38,6 @@ public class FileStorageClient {
 
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
         return restTemplate.postForObject(
-                fileStorageServiceUrl + "/api/files", request, StoredFileDto.class);
+                FILE_STORAGE_SERVICE_URL + "/api/files", request, StoredFileDto.class);
     }
 }

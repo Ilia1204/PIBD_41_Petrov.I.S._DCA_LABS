@@ -18,12 +18,24 @@ services:
     networks:
       - dca-net
 
+  eureka-server:
+    build: ./eureka-server
+    container_name: dca-eureka-server
+    environment:
+      SERVER_PORT: 8761
+    ports:
+      - '8761:8761'
+    networks:
+      - dca-net
+
   disk-service:
     build: ./disk-service
     container_name: dca-disk-service
     depends_on:
       postgres:
         condition: service_healthy
+      eureka-server:
+        condition: service_started
       report-service:
         condition: service_started
     environment:
@@ -31,7 +43,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SERVER_PORT: 8081
-      REPORT_SERVICE_URL: http://report-service:8082
+      EUREKA_URL: http://eureka-server:8761/eureka/
       OTLP_ENDPOINT: http://apm-server:8200/v1/traces
     ports:
       - '8081:8081'
@@ -44,6 +56,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      eureka-server:
+        condition: service_started
       file-storage-service:
         condition: service_started
     environment:
@@ -51,7 +65,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SERVER_PORT: 8082
-      FILE_STORAGE_SERVICE_URL: http://file-storage-service:8083
+      EUREKA_URL: http://eureka-server:8761/eureka/
       OTLP_ENDPOINT: http://apm-server:8200/v1/traces
     # порт наружу не пробрасываю: доступ только внутри dca-net (напрямую через шлюз сервис недоступен)
     networks:
@@ -60,9 +74,13 @@ services:
   file-storage-service:
     build: ./file-storage-service
     container_name: dca-file-storage-service
+    depends_on:
+      eureka-server:
+        condition: service_started
     environment:
       SERVER_PORT: 8083
       FILE_STORAGE_LOCATION: /data/storage
+      EUREKA_URL: http://eureka-server:8761/eureka/
       OTLP_ENDPOINT: http://apm-server:8200/v1/traces
     volumes:
       - file-storage-data:/data/storage
@@ -75,10 +93,13 @@ services:
     build: ./gateway
     container_name: dca-gateway
     depends_on:
-      - disk-service
+      eureka-server:
+        condition: service_started
+      disk-service:
+        condition: service_started
     environment:
-      DISK_SERVICE_URL: http://disk-service:8081
       SERVER_PORT: 8080
+      EUREKA_URL: http://eureka-server:8761/eureka/
       OTLP_ENDPOINT: http://apm-server:8200/v1/traces
     ports:
       - '8080:8080'
