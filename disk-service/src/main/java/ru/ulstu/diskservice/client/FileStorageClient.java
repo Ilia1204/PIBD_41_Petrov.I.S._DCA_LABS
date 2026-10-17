@@ -25,12 +25,15 @@ public class FileStorageClient {
     }
 
     // не блокируем вызывающий поток на время похода в file-storage-service
-    public CompletableFuture<byte[]> downloadReportAsync(String fileName) {
+    public CompletableFuture<byte[]> downloadReportAsync(Long exportId, String fileName) {
+        // file-storage-service хранит экспортированные отчёты под именем "export-{id}_{fileName}" -
+        // так повторная доставка команды из очереди не создаёт дубликат файла (см. FileStorageService.storeForExport)
+        String storedName = "export-" + exportId + "_" + fileName;
         return CompletableFuture.supplyAsync(() -> {
             log.info("выполняю запрос файла {} к file-storage-service в потоке {}",
-                    fileName, Thread.currentThread().getName());
+                    storedName, Thread.currentThread().getName());
             return restTemplate.getForObject(FILE_STORAGE_SERVICE_URL + "/api/files/{fileName}",
-                    byte[].class, fileName);
+                    byte[].class, storedName);
         }, fileStorageExecutor);
     }
 }

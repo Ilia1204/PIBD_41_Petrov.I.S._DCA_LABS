@@ -123,13 +123,14 @@ public class DiskController {
         return reportServiceClient.triggerExport();
     }
 
-    @GetMapping("/report/export/{fileName}")
+    @GetMapping("/report/export/{id}/{fileName}")
     @Operation(summary = "Скачать готовый csv-отчёт из файлового хранилища (асинхронно, через CompletableFuture)")
-    public CompletableFuture<ResponseEntity<byte[]>> downloadExportedReport(@PathVariable String fileName) {
+    public CompletableFuture<ResponseEntity<byte[]>> downloadExportedReport(@PathVariable Long id,
+            @PathVariable String fileName) {
         // поток запроса освобождается сразу, фактическое ожидание ответа идёт в fileStorageExecutor
-        log.info("асинхронно запрашиваю csv-отчёт {} из файлового хранилища, поток запроса: {}",
-                fileName, Thread.currentThread().getName());
-        return fileStorageClient.downloadReportAsync(fileName)
+        log.info("асинхронно запрашиваю csv-отчёт {} (экспорт {}) из файлового хранилища, поток запроса: {}",
+                fileName, id, Thread.currentThread().getName());
+        return fileStorageClient.downloadReportAsync(id, fileName)
                 .thenApply(content -> {
                     log.info("получил csv-отчёт {} из файлового хранилища, поток обработки: {}",
                             fileName, Thread.currentThread().getName());
