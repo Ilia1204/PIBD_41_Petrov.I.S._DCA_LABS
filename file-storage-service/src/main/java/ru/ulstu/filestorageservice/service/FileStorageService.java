@@ -43,6 +43,19 @@ public class FileStorageService {
         return new StoredFileDto(storedName, file.getSize(), Instant.now());
     }
 
+    // сохранение из очереди: имя файла детерминировано по exportId, поэтому повторная
+    // доставка команды (например, после переподключения к брокеру) не создаёт дубликат файла
+    public StoredFileDto storeForExport(Long exportId, String originalFileName, byte[] content) {
+        String storedName = "export-" + exportId + "_" + safeFileName(originalFileName);
+        Path target = storageDir.resolve(storedName);
+        try {
+            Files.write(target, content);
+        } catch (IOException e) {
+            throw new StorageException("не удалось сохранить файл " + storedName, e);
+        }
+        return new StoredFileDto(storedName, content.length, Instant.now());
+    }
+
     public byte[] read(String fileName) {
         Path target = resolveExisting(fileName);
         try {

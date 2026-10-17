@@ -5,6 +5,11 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    listener:
+      simple:
+        default-requeue-rejected: false
 
 file-storage:
   location: ${FILE_STORAGE_LOCATION:./storage-data}

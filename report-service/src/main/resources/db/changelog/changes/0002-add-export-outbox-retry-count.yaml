@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0002-add-export-outbox-retry-count
+      author: petrov.i.s
+      changes:
+        - addColumn:
+            tableName: export_outbox
+            columns:
+              - column:
+                  name: retry_count
+                  type: INT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false

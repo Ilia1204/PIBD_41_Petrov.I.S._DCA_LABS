@@ -28,6 +28,20 @@ services:
     networks:
       - dca-net
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: dca-rabbitmq
+    ports:
+      - '5672:5672' # amqp
+      - '15672:15672' # management ui
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dca-net
+
   disk-service:
     build: ./disk-service
     container_name: dca-disk-service
@@ -58,6 +72,8 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
       file-storage-service:
         condition: service_started
     environment:
@@ -67,6 +83,7 @@ services:
       SERVER_PORT: 8082
       EUREKA_URL: http://eureka-server:8761/eureka/
       OTLP_ENDPOINT: http://apm-server:8200/v1/traces
+      RABBITMQ_HOST: rabbitmq
     # порт наружу не пробрасываю: доступ только внутри dca-net (напрямую через шлюз сервис недоступен)
     networks:
       - dca-net
@@ -77,11 +94,14 @@ services:
     depends_on:
       eureka-server:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
     environment:
       SERVER_PORT: 8083
       FILE_STORAGE_LOCATION: /data/storage
       EUREKA_URL: http://eureka-server:8761/eureka/
       OTLP_ENDPOINT: http://apm-server:8200/v1/traces
+      RABBITMQ_HOST: rabbitmq
     volumes:
       - file-storage-data:/data/storage
     ports:

@@ -15,8 +15,18 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    listener:
+      simple:
+        # сообщение, обработчик которого упал, не крутим в очереди бесконечно, а сразу в DLQ
+        default-requeue-rejected: false
+
 server:
   port: ${SERVER_PORT:8082}
+
+outbox:
+  max-retries: 5
 
 eureka:
   client:

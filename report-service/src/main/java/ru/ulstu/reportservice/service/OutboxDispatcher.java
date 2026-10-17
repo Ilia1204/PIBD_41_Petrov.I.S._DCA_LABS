@@ -30,12 +30,12 @@ public class OutboxDispatcher {
         List<ExportOutbox> pending = outboxRepository.findByStatus(OutboxStatus.PENDING);
         for (ExportOutbox outbox : pending) {
             try {
-                fileStorageClient.upload(outbox.getContent(), outbox.getFileName());
-                outbox.markSent();
+                fileStorageClient.send(outbox);
+                outbox.markSending();
                 outboxRepository.save(outbox);
-                log.info("csv-отчёт {} отправлен в файловое хранилище", outbox.getFileName());
+                log.info("csv-отчёт {} отправлен в очередь на сохранение", outbox.getFileName());
             } catch (Exception ex) {
-                log.warn("не удалось отправить csv-отчёт {} в файловое хранилище, повторю позже: {}",
+                log.warn("не удалось отправить csv-отчёт {} в очередь, повторю позже: {}",
                         outbox.getFileName(), ex.getMessage());
             }
         }

@@ -35,6 +35,9 @@ public class ExportOutbox {
     @Column(name = "sent_at")
     private Instant sentAt;
 
+    @Column(name = "retry_count", nullable = false)
+    private int retryCount;
+
     protected ExportOutbox() {
     }
 
@@ -45,9 +48,19 @@ public class ExportOutbox {
         this.createdAt = Instant.now();
     }
 
+    public void markSending() {
+        this.status = OutboxStatus.SENDING;
+    }
+
     public void markSent() {
         this.status = OutboxStatus.SENT;
         this.sentAt = Instant.now();
+    }
+
+    // неудачная попытка: либо повторяем, либо, исчерпав лимит, останавливаемся на FAILED
+    public void markRetryOrFailed(int maxRetries) {
+        this.retryCount++;
+        this.status = this.retryCount >= maxRetries ? OutboxStatus.FAILED : OutboxStatus.PENDING;
     }
 
     public Long getId() {
@@ -72,5 +85,9 @@ public class ExportOutbox {
 
     public Instant getSentAt() {
         return sentAt;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
     }
 }
