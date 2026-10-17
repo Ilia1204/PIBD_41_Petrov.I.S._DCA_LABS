@@ -8,6 +8,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import ru.ulstu.diskservice.service.BusinessRuleException;
@@ -43,5 +44,10 @@ public class RestExceptionHandler {
     public ProblemDetail handleReportServiceUnavailable(ResourceAccessException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
                 "Сервис отчётов временно недоступен, попробуйте позже");
+    }
+
+    @ExceptionHandler(HttpClientErrorException.NotFound.class)
+    public ProblemDetail handleFileNotFound(HttpClientErrorException.NotFound ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "файл не найден в файловом хранилище");
     }
 }

@@ -1,13 +1,17 @@
 package ru.ulstu.diskservice.web;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +27,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import ru.ulstu.diskservice.client.FileStorageClient;
 import ru.ulstu.diskservice.client.ReportServiceClient;
 import ru.ulstu.diskservice.service.DiskService;
 import ru.ulstu.diskservice.web.dto.CreateDiskRequest;
@@ -42,10 +47,13 @@ public class DiskController {
 
     private final DiskService service;
     private final ReportServiceClient reportServiceClient;
+    private final FileStorageClient fileStorageClient;
 
-    public DiskController(DiskService service, ReportServiceClient reportServiceClient) {
+    public DiskController(DiskService service, ReportServiceClient reportServiceClient,
+            FileStorageClient fileStorageClient) {
         this.service = service;
         this.reportServiceClient = reportServiceClient;
+        this.fileStorageClient = fileStorageClient;
     }
 
     @GetMapping
@@ -113,5 +121,19 @@ public class DiskController {
     public ExportStatusDto exportReport() {
         log.info("ставлю в очередь экспорт csv-отчёта в файловое хранилище через report-service");
         return reportServiceClient.triggerExport();
+    }
+
+    @GetMapping("/report/export/{fileName}")
+    @Operation(summary = "Скачать готовый csv-отчёт из файлового хранилища (асинхронно, через CompletableFuture)")
+    public CompletableFuture<ResponseEntity<byte[]>> downloadExportedReport(@PathVariable String fileName) {
+        log.info("асинхронно запрашиваю csv-отчёт {} из файлового хранилища", fileName);
+        return fileStorageClient.downloadReportAsync(fileName)
+                .thenApply(content -> {
+                    ContentDisposition disposition = ContentDisposition.attachment().filename(fileName).build();
+                    return ResponseEntity.ok()
+                            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                            .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                            .body(content);
+                });
     }
 }
