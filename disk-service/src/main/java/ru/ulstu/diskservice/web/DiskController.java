@@ -126,9 +126,13 @@ public class DiskController {
     @GetMapping("/report/export/{fileName}")
     @Operation(summary = "Скачать готовый csv-отчёт из файлового хранилища (асинхронно, через CompletableFuture)")
     public CompletableFuture<ResponseEntity<byte[]>> downloadExportedReport(@PathVariable String fileName) {
-        log.info("асинхронно запрашиваю csv-отчёт {} из файлового хранилища", fileName);
+        // поток запроса освобождается сразу, фактическое ожидание ответа идёт в fileStorageExecutor
+        log.info("асинхронно запрашиваю csv-отчёт {} из файлового хранилища, поток запроса: {}",
+                fileName, Thread.currentThread().getName());
         return fileStorageClient.downloadReportAsync(fileName)
                 .thenApply(content -> {
+                    log.info("получил csv-отчёт {} из файлового хранилища, поток обработки: {}",
+                            fileName, Thread.currentThread().getName());
                     ContentDisposition disposition = ContentDisposition.attachment().filename(fileName).build();
                     return ResponseEntity.ok()
                             .contentType(MediaType.APPLICATION_OCTET_STREAM)
