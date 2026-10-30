@@ -9,7 +9,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Configuration
 public class AsyncConfig {
 
-    // отдельный пул для асинхронных запросов в file-storage-service, чтобы не мешать остальным задачам
     @Bean("fileStorageExecutor")
     public Executor fileStorageExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
