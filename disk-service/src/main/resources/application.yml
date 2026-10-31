@@ -49,6 +49,3 @@ app:
   security:
     jwt-secret: ${JWT_SECRET:dev-only-secret-key-change-me-in-production-32-bytes-min}
     jwt-expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
-    admin-username: ${ADMIN_USERNAME:admin}
-    # bcrypt-хэш пароля "admin123", задаётся через env в проде
-    admin-password-hash: ${ADMIN_PASSWORD_HASH:$2y$05$blr7Vf.KPovYIEe0t.O4J.rR40Urn2d.PYUfuWaYjX.O1ygj1IKVG}

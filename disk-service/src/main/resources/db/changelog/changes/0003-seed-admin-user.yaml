@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0003-seed-admin-user
+      author: petrov.i.s
+      changes:
+        - insert:
+            tableName: app_user
+            columns:
+              - column:
+                  name: username
+                  value: admin
+              # bcrypt-хэш пароля "admin123"
+              - column:
+                  name: password_hash
+                  value: $2y$05$blr7Vf.KPovYIEe0t.O4J.rR40Urn2d.PYUfuWaYjX.O1ygj1IKVG
+              - column:
+                  name: created_at
+                  valueComputed: now()

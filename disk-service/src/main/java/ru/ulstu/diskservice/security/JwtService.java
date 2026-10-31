@@ -37,7 +37,6 @@ public class JwtService {
                 .compact();
     }
 
-    // возвращает логин из токена или null, если токен невалиден/просрочен
     public String parseUsername(String token) {
         try {
             Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
