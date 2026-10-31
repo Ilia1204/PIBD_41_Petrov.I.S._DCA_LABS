@@ -107,8 +107,9 @@ public class DiskController {
 
     @GetMapping("/sorted")
     @Operation(summary = "Отсортировать диски по id параллельной сортировкой слиянием")
-    public SortedDisksDto sorted(@RequestParam(defaultValue = "4") int threads) {
-        return SortedDisksDto.of(service.sortAllById(threads));
+    public SortedDisksDto sorted(@RequestParam(defaultValue = "4") int threads,
+            @RequestParam(required = false) Integer size) {
+        return SortedDisksDto.of(service.sortAllById(threads, size));
     }
 
     @GetMapping("/report")

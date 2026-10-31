@@ -28,7 +28,6 @@ public final class ParallelMergeSort {
             return new SortResult<>(List.of(), 0, 0);
         }
 
-        // больше потоков, чем элементов, толку не даёт
         int threads = Math.min(initialThreads, data.size());
         long start = System.nanoTime();
 
@@ -56,7 +55,6 @@ public final class ParallelMergeSort {
         int remainder = data.size() % parts;
         int from = 0;
         for (int i = 0; i < parts; i++) {
-            // остаток от деления добавляем в последний кусок
             int to = from + size + (i == parts - 1 ? remainder : 0);
             chunks.add(new ArrayList<>(data.subList(from, to)));
             from = to;
@@ -87,8 +85,6 @@ public final class ParallelMergeSort {
         }
         List<List<T>> merged = awaitAll(futures);
 
-        // нечётный кусок, которому не хватило пары, переходит на следующую стадию без
-        // изменений
         if (chunks.size() % 2 != 0) {
             merged.add(chunks.get(chunks.size() - 1));
         }

@@ -1,7 +1,10 @@
 package ru.ulstu.diskservice.service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -95,7 +98,18 @@ public class DiskService {
     }
 
     @Transactional(readOnly = true)
-    public SortResult<Disk> sortAllById(int threads) {
-        return ParallelMergeSort.sort(repository.findAll(), threads, Comparator.comparing(Disk::getId));
+    public SortResult<Disk> sortAllById(int threads, Integer syntheticSize) {
+        List<Disk> disks = syntheticSize != null ? generateSyntheticDisks(syntheticSize) : repository.findAll();
+        return ParallelMergeSort.sort(disks, threads, Comparator.comparing(Disk::getId));
+    }
+
+    private List<Disk> generateSyntheticDisks(int size) {
+        List<Disk> disks = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            Disk disk = new Disk();
+            disk.setId((long) ThreadLocalRandom.current().nextInt(size));
+            disks.add(disk);
+        }
+        return disks;
     }
 }
