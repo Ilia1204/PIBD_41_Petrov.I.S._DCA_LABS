@@ -1,6 +1,7 @@
 package ru.ulstu.diskservice.service;
 
 import java.time.Instant;
+import java.util.Comparator;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,8 @@ import ru.ulstu.diskservice.repository.DiskRepository;
 import ru.ulstu.diskservice.web.dto.CreateDiskRequest;
 import ru.ulstu.diskservice.web.dto.DiskReportDto;
 import ru.ulstu.diskservice.web.dto.UpdateDiskRequest;
+import ru.ulstu.sortinglib.ParallelMergeSort;
+import ru.ulstu.sortinglib.SortResult;
 
 @Service
 @Transactional
@@ -89,5 +92,10 @@ public class DiskService {
         long onHands = repository.countByStatus(DiskStatus.ON_HANDS);
         long inStock = repository.countByStatus(DiskStatus.IN_STOCK);
         return new DiskReportDto(onHands, inStock, onHands + inStock);
+    }
+
+    @Transactional(readOnly = true)
+    public SortResult<Disk> sortAllById(int threads) {
+        return ParallelMergeSort.sort(repository.findAll(), threads, Comparator.comparing(Disk::getId));
     }
 }

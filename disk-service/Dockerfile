@@ -1,16 +1,16 @@
-
 FROM eclipse-temurin:21-jdk AS build
-WORKDIR /app
+WORKDIR /build
 
-COPY gradlew settings.gradle build.gradle ./
-COPY gradle ./gradle
-RUN chmod +x gradlew && ./gradlew --no-daemon dependencies > /dev/null 2>&1 || true
+# собираем вместе с sorting-lib - disk-service подключает её через includeBuild('../sorting-lib')
+COPY sorting-lib ./sorting-lib
+COPY disk-service ./disk-service
 
-COPY src ./src
+WORKDIR /build/disk-service
+RUN chmod +x gradlew
 RUN ./gradlew --no-daemon clean bootJar
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /app/build/libs/*.jar app.jar
+COPY --from=build /build/disk-service/build/libs/*.jar app.jar
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]

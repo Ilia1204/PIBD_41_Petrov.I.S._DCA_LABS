@@ -43,7 +43,9 @@ services:
       - dca-net
 
   disk-service:
-    build: ./disk-service
+    build:
+      context: .
+      dockerfile: disk-service/Dockerfile
     container_name: dca-disk-service
     depends_on:
       postgres:
